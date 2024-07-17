@@ -1,6 +1,3 @@
-Certainly! I'll provide the updated version of the includes/data-processing.php file with the logging functionality implemented. Here's the entire file with the new changes:
-
-```php
 <?php
 /**
  * Enhanced Athlete Body Composition Tracking System - Data Processing
