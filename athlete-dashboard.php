@@ -193,6 +193,36 @@ function body_weight_progress_content() {
 }
 
 /**
+ * Generate Romanian Deadlift 1RM progress content
+ */
+function rdl_1rm_progress_content() {
+    echo do_shortcode( '[user_rdl_1rm_progress]' );
+    ?>
+    <div class="progress-chart-container full-width">
+        <canvas id="rdl1rpmProgressChart"></canvas>
+    </div>
+    <form id="rdl-1rpm-progress-form" class="progress-input-form custom-form">
+        <div class="form-group">
+            <label for="rdl_1rm"><?php esc_html_e( 'Romanian Deadlift 1RM:', 'athlete-dashboard' ); ?></label>
+            <div class="weight-input-group">
+                <input type="number" id="rdl_1rm" name="rdl_1rm" required step="0.1">
+                <select id="rdl_1rm_unit" name="rdl_1rm_unit">
+                    <option value="kg"><?php esc_html_e( 'kg', 'athlete-dashboard' ); ?></option>
+                    <option value="lbs"><?php esc_html_e( 'lbs', 'athlete-dashboard' ); ?></option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="rdl_1rm_date"><?php esc_html_e( 'Date:', 'athlete-dashboard' ); ?></label>
+            <input type="date" id="rdl_1rm_date" name="rdl_1rm_date" required>
+        </div>
+        <button type="submit" class="custom-button"><?php esc_html_e( 'Add Progress', 'athlete-dashboard' ); ?></button>
+    </form>
+    <?php wp_nonce_field( 'athlete_dashboard_nonce', 'rdl_1rpm_progress_nonce' ); ?>
+    <?php
+}
+
+/**
  * Generate comprehensive body composition content
  */
 function comprehensive_body_composition_content() {

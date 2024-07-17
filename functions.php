@@ -1086,4 +1086,64 @@ function get_exercise_progress() {
 }
 add_action('wp_ajax_get_exercise_progress', 'get_exercise_progress');
 
+/**
+ * Handle Romanian Deadlift 1RM progress submission
+ */
+function handle_rdl_1rm_progress_submission() {
+    check_ajax_referer('athlete_dashboard_nonce', 'nonce');
+    
+    $user_id = get_current_user_id();
+    $rdl_1rm = isset($_POST['rdl_1rm']) ? floatval($_POST['rdl_1rm']) : 0;
+    $unit = isset($_POST['rdl_1rm_unit']) ? sanitize_text_field($_POST['rdl_1rm_unit']) : 'kg';
+    $date = isset($_POST['rdl_1rm_date']) && !empty($_POST['rdl_1rm_date']) ? sanitize_text_field($_POST['rdl_1rm_date']) : current_time('mysql');
+
+    if ($rdl_1rm <= 0) {
+        wp_send_json_error('Invalid Romanian Deadlift 1RM value');
+    }
+
+    // Convert weight to kg if it's in lbs
+    if ($unit === 'lbs') {
+        $rdl_1rm = $rdl_1rm / 2.20462; // Convert lbs to kg
+        $unit = 'kg';
+    }
+
+    $updated = store_user_rdl_1rm_progress($user_id, $rdl_1rm, $unit, $date);
+
+    if ($updated) {
+        wp_send_json_success('Romanian Deadlift 1RM progress updated successfully');
+    } else {
+        wp_send_json_success('Romanian Deadlift 1RM progress added successfully');
+    }
+}
+add_action('wp_ajax_handle_rdl_1rm_progress_submission', 'handle_rdl_1rm_progress_submission');
+
+/**
+ * Get Romanian Deadlift 1RM progress data
+ */
+function get_rdl_1rm_progress() {
+    check_ajax_referer('athlete_dashboard_nonce', 'nonce');
+    
+    $user_id = get_current_user_id();
+    $progress = get_user_rdl_1rm_progress($user_id);
+    
+    if (empty($progress)) {
+        wp_send_json_error('No Romanian Deadlift 1RM progress data found');
+    }
+    
+    $chart_data = array(
+        'datasets' => array(
+            array(
+                'label' => 'Romanian Deadlift 1RM Progress',
+                'data' => $progress,
+                'fill' => false,
+                'borderColor' => 'rgb(75, 192, 192)',
+                'tension' => 0.1
+            )
+        )
+    );
+    
+    wp_send_json_success($chart_data);
+}
+add_action('wp_ajax_get_rdl_1rm_progress', 'get_rdl_1rm_progress');
+
 ?>

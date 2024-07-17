@@ -497,6 +497,79 @@ function rollback_body_composition_migration() {
     return sprintf(__("Rollback completed. Log file created at %s", 'athlete-dashboard'), $log_file_path);
 }
 
+/**
+ * Store Romanian Deadlift 1RM progress for a user
+ */
+function store_user_rdl_1rm_progress($user_id, $rdl_1rm, $unit, $date = null) {
+    if (!$date) {
+        $date = current_time('mysql');
+    }
+    
+    $progress = get_user_meta($user_id, 'rdl_1rm_progress', true);
+    if (!is_array($progress)) {
+        $progress = array();
+    }
+    
+    $entry_date = date('Y-m-d', strtotime($date));
+    
+    $existing_entry_index = array_search($entry_date, array_column($progress, 'date'));
+    
+    if ($existing_entry_index !== false) {
+        $progress[$existing_entry_index] = array(
+            'date' => $entry_date,
+            'rdl_1rm' => floatval($rdl_1rm),
+            'unit' => $unit
+        );
+    } else {
+        $progress[] = array(
+            'date' => $entry_date,
+            'rdl_1rm' => floatval($rdl_1rm),
+            'unit' => $unit
+        );
+    }
+    
+    usort($progress, function($a, $b) {
+        return strtotime($b['date']) - strtotime($a['date']);
+    });
+    
+    update_user_meta($user_id, 'rdl_1rm_progress', $progress);
+    
+    return $existing_entry_index !== false;
+}
+
+/**
+ * Get Romanian Deadlift 1RM progress for a user
+ */
+function get_user_rdl_1rm_progress($user_id) {
+    $progress = get_user_meta($user_id, 'rdl_1rm_progress', true);
+    if (!is_array($progress)) {
+        return array();
+    }
+    
+    usort($progress, function($a, $b) {
+        return strtotime($a['date']) - strtotime($b['date']);
+    });
+    
+    return array_map(function($entry) {
+        return array(
+            'x' => $entry['date'],
+            'y' => floatval($entry['rdl_1rm'])
+        );
+    }, $progress);
+}
+
+/**
+ * Get the most recent Romanian Deadlift 1RM for a user
+ */
+function get_most_recent_rdl_1rm($user_id) {
+    $progress = get_user_meta($user_id, 'rdl_1rm_progress', true);
+    if (is_array($progress) && !empty($progress)) {
+        $latest_entry = reset($progress);
+        return $latest_entry['rdl_1rm'] . ' ' . $latest_entry['unit'];
+    }
+    return 'No data';
+}
+
 // Uncomment the following line to run the migration
 // echo migrate_body_composition_data();
 
